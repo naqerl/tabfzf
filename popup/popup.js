@@ -1,10 +1,12 @@
 const mainView = document.getElementById("mainView");
 const settingsView = document.getElementById("settingsView");
+const helpView = document.getElementById("helpView");
 const queryInput = document.getElementById("queryInput");
 const tabsList = document.getElementById("tabsList");
 const statusText = document.getElementById("statusText");
 const openSettingsButton = document.getElementById("openSettingsButton");
 const backButton = document.getElementById("backButton");
+const helpBackButton = document.getElementById("helpBackButton");
 const shortcutInput = document.getElementById("shortcutInput");
 const saveShortcutButton = document.getElementById("saveShortcutButton");
 const openFirefoxShortcutsButton = document.getElementById("openFirefoxShortcutsButton");
@@ -77,6 +79,7 @@ function normalizeText(value) {
 
 function showMainView() {
   settingsView.classList.add("hidden");
+  helpView.classList.add("hidden");
   mainView.classList.remove("hidden");
   focusSearchInput();
   scheduleFocusRetries();
@@ -84,10 +87,17 @@ function showMainView() {
 
 async function showSettingsView() {
   mainView.classList.add("hidden");
+  helpView.classList.add("hidden");
   settingsView.classList.remove("hidden");
   settingsStatusText.textContent = "";
   await loadCurrentShortcut();
   shortcutInput.focus();
+}
+
+function showHelpView() {
+  mainView.classList.add("hidden");
+  settingsView.classList.add("hidden");
+  helpView.classList.remove("hidden");
 }
 
 function getFilteredTabs(query) {
@@ -298,6 +308,110 @@ async function saveShortcut() {
   }
 }
 
+function setSelection(start, end = start) {
+  queryInput.setSelectionRange(start, end);
+}
+
+function findWordForwardIndex(value, start) {
+  let index = start;
+  while (index < value.length && /\s/.test(value[index])) {
+    index += 1;
+  }
+  while (index < value.length && !/\s/.test(value[index])) {
+    index += 1;
+  }
+  return index;
+}
+
+function findWordBackwardIndex(value, start) {
+  let index = start;
+  while (index > 0 && /\s/.test(value[index - 1])) {
+    index -= 1;
+  }
+  while (index > 0 && !/\s/.test(value[index - 1])) {
+    index -= 1;
+  }
+  return index;
+}
+
+function applyQueryValue(nextValue, nextCursor) {
+  queryInput.value = nextValue;
+  setSelection(nextCursor);
+  selectedIndex = 0;
+  refreshFilteredTabs();
+}
+
+function handleBashShortcut(event) {
+  const hasCtrl = event.ctrlKey && !event.metaKey;
+  const hasAlt = event.altKey && !event.ctrlKey && !event.metaKey;
+  const value = queryInput.value;
+  const selectionStart = queryInput.selectionStart ?? 0;
+  const selectionEnd = queryInput.selectionEnd ?? selectionStart;
+
+  if (hasCtrl && event.key.toLowerCase() === "a") {
+    event.preventDefault();
+    setSelection(0);
+    return true;
+  }
+
+  if (hasCtrl && event.key.toLowerCase() === "e") {
+    event.preventDefault();
+    setSelection(value.length);
+    return true;
+  }
+
+  if (hasAlt && event.key.toLowerCase() === "f") {
+    event.preventDefault();
+    setSelection(findWordForwardIndex(value, selectionEnd));
+    return true;
+  }
+
+  if (hasAlt && event.key.toLowerCase() === "b") {
+    event.preventDefault();
+    setSelection(findWordBackwardIndex(value, selectionStart));
+    return true;
+  }
+
+  if (hasAlt && event.key.toLowerCase() === "d") {
+    event.preventDefault();
+    if (selectionStart !== selectionEnd) {
+      applyQueryValue(value.slice(0, selectionStart) + value.slice(selectionEnd), selectionStart);
+      return true;
+    }
+
+    const deleteEnd = findWordForwardIndex(value, selectionStart);
+    applyQueryValue(value.slice(0, selectionStart) + value.slice(deleteEnd), selectionStart);
+    return true;
+  }
+
+  if (hasCtrl && event.key.toLowerCase() === "d") {
+    event.preventDefault();
+    if (selectionStart !== selectionEnd) {
+      applyQueryValue(value.slice(0, selectionStart) + value.slice(selectionEnd), selectionStart);
+      return true;
+    }
+    if (selectionStart >= value.length) {
+      return true;
+    }
+    applyQueryValue(value.slice(0, selectionStart) + value.slice(selectionStart + 1), selectionStart);
+    return true;
+  }
+
+  if (hasCtrl && event.key.toLowerCase() === "k") {
+    event.preventDefault();
+    applyQueryValue(value.slice(0, selectionStart), selectionStart);
+    return true;
+  }
+
+  if (hasCtrl && event.key.toLowerCase() === "h") {
+    event.preventDefault();
+    showHelpView();
+    return true;
+  }
+
+  return false;
+}
+
 function bindEvents() {
   queryInput.addEventListener("input", () => {
     selectedIndex = 0;
@@ -305,6 +419,10 @@ function bindEvents() {
   });
 
   queryInput.addEventListener("keydown", async (event) => {
+    if (handleBashShortcut(event)) {
+      return;
+    }
+
     if (event.key === "ArrowDown") {
       event.preventDefault();
       moveSelection(1);
@@ -361,6 +479,7 @@ function bindEvents() {
   });
 
   backButton.addEventListener("click", showMainView);
+  helpBackButton.addEventListener("click", showMainView);
 
   saveShortcutButton.addEventListener("click", () => {
     saveShortcut().catch((error) => {

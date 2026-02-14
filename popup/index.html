@@ -48,6 +48,26 @@
           <button id="backButton" class="back-button" type="button" aria-label="Back">Back</button>
         </div>
       </section>
+
+      <section id="helpView" class="view hidden">
+        <div class="settings-header">
+          <h1 class="settings-title">Shortcuts</h1>
+        </div>
+        <ul class="legend-list">
+          <li><code>Ctrl+A</code> move cursor to start</li>
+          <li><code>Ctrl+E</code> move cursor to end</li>
+          <li><code>Alt+F</code> move forward by word</li>
+          <li><code>Alt+B</code> move backward by word</li>
+          <li><code>Alt+D</code> delete next word</li>
+          <li><code>Ctrl+D</code> delete next character</li>
+          <li><code>Ctrl+K</code> delete to end of line</li>
+          <li><code>Ctrl+H</code> open this help page</li>
+        </ul>
+        <div class="bottom-bar">
+          <p class="status">Bash-like controls in search input</p>
+          <button id="helpBackButton" class="back-button" type="button" aria-label="Back">Back</button>
+        </div>
+      </section>
     </main>
     <script src="./popup.js"></script>
   </body>
