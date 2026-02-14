@@ -1,29 +1,27 @@
-# Tab FZF (Firefox Extension)
+# TabFZF
 
-Keyboard-first tab search popup.
+You like staying focused in your editor and using FZF for navigation. TabFZF brings that same keyboard-first flow to your browser tabs.
+
+## Quick Demo
+
+Video: `https://youtu.be/-RNFQ8brvkU`
 
 ## Features
 
-- Toolbar click opens popup with tab search.
-- Search over open tab titles and switch with Enter.
-- Settings view (gear button in bottom-right) to manage shortcut.
-- Keyboard navigation:
-  - `ArrowDown` / `Ctrl+N` / `Ctrl+J`
-  - `ArrowUp` / `Ctrl+P` / `Ctrl+K`
-  - `Enter` to confirm
-  - `Esc` to close
-- Selecting a match activates that tab and focuses its window.
+1. [x] Trigger by configurable shortcut
+2. [x] Emacs-like binds
+3. [ ] Change themes (TODO)
+4. [ ] Change fuzzy algorithms (TODO)
 
-## Install (Temporary)
+## Supported Browsers
 
-1. Run `npm run build`.
-2. Open `about:debugging#/runtime/this-firefox`.
-3. Click **Load Temporary Add-on...**
-4. Select `dist/tabfzf.xpi` (recommended for Flatpak Firefox).
+- [x] Firefox
+- [ ] Chromium (planned)
 
-## Notes
+## Installation Guide
 
-- Requires the `tabs` permission to read tab titles.
-- If `Ctrl+Shift+K` conflicts on your setup, change it in:
-- Flatpak note: loading only `manifest.json` via file portal can hide sibling files (`popup/`, `icons/`).
-  Use `dist/tabfzf.xpi` so all extension files are bundled.
+1. Open the latest release: `https://github.com/naqerl/tabfzf/releases/latest`
+2. Download `tabfzf.xpi` from the release assets.
+3. Open `about:addons` in Firefox.
+4. Click the gear icon, then **Install Add-on From File...**
+5. Select the downloaded `tabfzf.xpi`.
