@@ -1,0 +1,9 @@
+{
+  "name": "tabfzf-extension",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Firefox extension tab popup",
+  "scripts": {
+    "build": "bash scripts/build.sh"
+  }
+}

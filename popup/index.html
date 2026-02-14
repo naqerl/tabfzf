@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tab FZF</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <input
+        id="queryInput"
+        class="query"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Search tabs..."
+        aria-label="Search tabs"
+      />
+      <ul id="tabsList" class="tabs" role="listbox" aria-label="Tabs"></ul>
+      <p id="statusText" class="status" aria-live="polite"></p>
+    </main>
+    <script src="./popup.js"></script>
+  </body>
+</html>
