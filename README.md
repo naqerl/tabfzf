@@ -4,7 +4,11 @@ You like staying focused in your editor and using FZF for navigation. TabFZF bri
 
 ## Quick Demo
 
-Video: `https://youtu.be/-RNFQ8brvkU`
+<video controls width="960" src="https://github.com/naqerl/tabfzf/releases/latest/download/demo.mp4">
+  Your browser does not support the video tag.
+</video>
+
+Fallback: `https://youtu.be/-RNFQ8brvkU`
 
 ## Features
 
