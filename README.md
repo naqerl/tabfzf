@@ -23,7 +23,8 @@ Fallback: [https://youtu.be/-RNFQ8brvkU](https://youtu.be/-RNFQ8brvkU)
 ## Installation Guide
 
 1. Open the latest release: [https://github.com/naqerl/tabfzf/releases/latest](https://github.com/naqerl/tabfzf/releases/latest)
-2. Download `tabfzf.xpi` from the release assets.
-3. Open [about:addons](about:addons) in Firefox.
+2. Download from terminal (optional):
+   `curl -L -o tabfzf.xpi https://github.com/naqerl/tabfzf/releases/download/v1.0.0/tabfzf.xpi`
+3. Open `about:addons` in Firefox.
 4. Click the gear icon, then **Install Add-on From File...**
 5. Select the downloaded `tabfzf.xpi`.
