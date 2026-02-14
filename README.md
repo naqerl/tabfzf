@@ -6,7 +6,7 @@ You like staying focused in your editor and using FZF for navigation. TabFZF bri
 
 https://github.com/user-attachments/assets/b4d0135a-1b7b-4040-8860-c9c08dfe87eb
 
-Fallback: `https://youtu.be/-RNFQ8brvkU`
+Fallback: [https://youtu.be/-RNFQ8brvkU](https://youtu.be/-RNFQ8brvkU)
 
 ## Features
 
@@ -22,8 +22,8 @@ Fallback: `https://youtu.be/-RNFQ8brvkU`
 
 ## Installation Guide
 
-1. Open the latest release: `https://github.com/naqerl/tabfzf/releases/latest`
+1. Open the latest release: [https://github.com/naqerl/tabfzf/releases/latest](https://github.com/naqerl/tabfzf/releases/latest)
 2. Download `tabfzf.xpi` from the release assets.
-3. Open `about:addons` in Firefox.
+3. Open [about:addons](about:addons) in Firefox.
 4. Click the gear icon, then **Install Add-on From File...**
 5. Select the downloaded `tabfzf.xpi`.
