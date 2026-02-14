@@ -8,17 +8,46 @@
   </head>
   <body>
     <main class="app">
-      <input
-        id="queryInput"
-        class="query"
-        type="text"
-        autocomplete="off"
-        spellcheck="false"
-        placeholder="Search tabs..."
-        aria-label="Search tabs"
-      />
-      <ul id="tabsList" class="tabs" role="listbox" aria-label="Tabs"></ul>
-      <p id="statusText" class="status" aria-live="polite"></p>
+      <section id="mainView" class="view">
+        <input
+          id="queryInput"
+          class="query"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="Search tabs..."
+          aria-label="Search tabs"
+        />
+        <ul id="tabsList" class="tabs" role="listbox" aria-label="Tabs"></ul>
+        <div class="bottom-bar">
+          <p id="statusText" class="status" aria-live="polite"></p>
+          <button id="openSettingsButton" class="gear-button" type="button" aria-label="Open settings">⚙</button>
+        </div>
+      </section>
+
+      <section id="settingsView" class="view hidden">
+        <div class="settings-header">
+          <h1 class="settings-title">Settings</h1>
+        </div>
+        <label class="field-label" for="shortcutInput">Shortcut</label>
+        <input
+          id="shortcutInput"
+          class="query"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="Ctrl+Shift+Y"
+          aria-label="Shortcut"
+        />
+        <div class="settings-actions">
+          <button id="saveShortcutButton" class="action-button" type="button">Save Shortcut</button>
+          <button id="openFirefoxShortcutsButton" class="action-button secondary" type="button">Open Firefox Shortcuts</button>
+        </div>
+        <div class="bottom-bar">
+          <p id="settingsStatusText" class="status" aria-live="polite"></p>
+          <button id="backButton" class="back-button" type="button" aria-label="Back">Back</button>
+        </div>
+      </section>
     </main>
     <script src="./popup.js"></script>
   </body>

@@ -1,12 +1,12 @@
 # Tab FZF (Firefox Extension)
 
-Keyboard-first tab search popup inspired by fzf.
+Keyboard-first tab search popup.
 
 ## Features
 
-- Toolbar click opens a dedicated popup window with tab search.
-- Optional keyboard shortcut via Firefox Extension Shortcuts.
-- Fuzzy search over open tab titles.
+- Toolbar click opens popup with tab search.
+- Search over open tab titles and switch with Enter.
+- Settings view (gear button in bottom-right) to manage shortcut.
 - Keyboard navigation:
   - `ArrowDown` / `Ctrl+N` / `Ctrl+J`
   - `ArrowUp` / `Ctrl+P` / `Ctrl+K`

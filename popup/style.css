@@ -28,11 +28,20 @@ body {
 }
 
 .app {
+  height: 100%;
+}
+
+.view {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 10px;
-  gap: 8px;
+  padding: 8px;
+  gap: 6px;
+}
+
+.view.hidden {
+  display: none;
 }
 
 .query {
@@ -84,4 +93,63 @@ body {
   margin: 0;
   color: var(--muted);
   min-height: 16px;
+}
+
+.bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#settingsView .bottom-bar {
+  margin-top: auto;
+}
+
+.gear-button {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-title {
+  margin: 0;
+  font-size: 16px;
+}
+
+.back-button,
+.action-button {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--text);
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.back-button {
+  padding: 6px 10px;
+}
+
+.action-button.secondary {
+  color: var(--muted);
+}
+
+.field-label {
+  color: var(--muted);
+}
+
+.settings-actions {
+  display: flex;
+  gap: 8px;
 }
