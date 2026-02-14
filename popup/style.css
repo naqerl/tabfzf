@@ -70,11 +70,11 @@ body {
 }
 
 .tab-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 7px 10px;
   border-bottom: 1px solid rgba(40, 56, 71, 0.65);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .tab-item:last-child {
@@ -86,7 +86,40 @@ body {
 }
 
 .tab-title {
+  color: #aeb9c5;
+}
+
+.tab-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-domain {
   color: var(--text);
+}
+
+.tab-separator {
+  color: var(--muted);
+}
+
+.tab-label .tab-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-favicon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  border-radius: 2px;
+}
+
+.tab-favicon.hidden {
+  visibility: hidden;
 }
 
 .status {

@@ -72,6 +72,19 @@ function getDisplayTitle(tab) {
   return title || "(untitled)";
 }
 
+function getTabDomain(tab) {
+  const url = tab.url || "";
+  if (!url) {
+    return "";
+  }
+
+  try {
+    return new URL(url).hostname || "";
+  } catch (_error) {
+    return "";
+  }
+}
+
 function normalizeText(value) {
   return (value || "").toLowerCase();
 }
@@ -113,7 +126,11 @@ function getFilteredTabs(query) {
   if (!q) {
     return visibleTabs;
   }
-  return visibleTabs.filter((tab) => normalizeText(getDisplayTitle(tab)).includes(q));
+  return visibleTabs.filter((tab) => {
+    const domain = normalizeText(getTabDomain(tab));
+    const title = normalizeText(getDisplayTitle(tab));
+    return domain.includes(q) || title.includes(q);
+  });
 }
 
 function renderTabs() {
@@ -136,10 +153,39 @@ function renderTabs() {
       item.classList.add("active");
     }
 
+    const favicon = document.createElement("img");
+    favicon.className = "tab-favicon";
+    favicon.alt = "";
+    if (tab.favIconUrl) {
+      favicon.src = tab.favIconUrl;
+      favicon.referrerPolicy = "no-referrer";
+      favicon.addEventListener("error", () => {
+        favicon.classList.add("hidden");
+      });
+    } else {
+      favicon.classList.add("hidden");
+    }
+
+    const label = document.createElement("span");
+    label.className = "tab-label";
+
+    const domain = document.createElement("span");
+    domain.className = "tab-domain";
+    domain.textContent = getTabDomain(tab) || "(local)";
+
+    const separator = document.createElement("span");
+    separator.className = "tab-separator";
+    separator.textContent = " · ";
+
     const title = document.createElement("span");
     title.className = "tab-title";
     title.textContent = getDisplayTitle(tab);
-    item.appendChild(title);
+
+    label.appendChild(domain);
+    label.appendChild(separator);
+    label.appendChild(title);
+    item.appendChild(favicon);
+    item.appendChild(label);
     fragment.appendChild(item);
   }
 
