@@ -169,3 +169,7 @@ body {
   padding: 1px 4px;
   color: var(--text);
 }
+
+.help-status {
+  margin-top: auto;
+}

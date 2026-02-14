@@ -6,7 +6,6 @@ const tabsList = document.getElementById("tabsList");
 const statusText = document.getElementById("statusText");
 const openSettingsButton = document.getElementById("openSettingsButton");
 const backButton = document.getElementById("backButton");
-const helpBackButton = document.getElementById("helpBackButton");
 const shortcutInput = document.getElementById("shortcutInput");
 const saveShortcutButton = document.getElementById("saveShortcutButton");
 const openFirefoxShortcutsButton = document.getElementById("openFirefoxShortcutsButton");
@@ -98,6 +97,14 @@ function showHelpView() {
   mainView.classList.add("hidden");
   settingsView.classList.add("hidden");
   helpView.classList.remove("hidden");
+}
+
+function toggleHelpView() {
+  if (!helpView.classList.contains("hidden")) {
+    showMainView();
+    return;
+  }
+  showHelpView();
 }
 
 function getFilteredTabs(query) {
@@ -405,7 +412,7 @@ function handleBashShortcut(event) {
 
   if (hasCtrl && event.key.toLowerCase() === "h") {
     event.preventDefault();
-    showHelpView();
+    toggleHelpView();
     return true;
   }
 
@@ -419,17 +426,20 @@ function bindEvents() {
   });
 
   queryInput.addEventListener("keydown", async (event) => {
+    const hasCtrl = event.ctrlKey && !event.metaKey;
+    const hasAlt = event.altKey && !event.ctrlKey && !event.metaKey;
+
     if (handleBashShortcut(event)) {
       return;
     }
 
-    if (event.key === "ArrowDown") {
+    if (event.key === "ArrowDown" || (hasAlt && event.key.toLowerCase() === "n")) {
       event.preventDefault();
       moveSelection(1);
       return;
     }
 
-    if (event.key === "ArrowUp") {
+    if (event.key === "ArrowUp" || (hasAlt && event.key.toLowerCase() === "p")) {
       event.preventDefault();
       moveSelection(-1);
       return;
@@ -479,7 +489,6 @@ function bindEvents() {
   });
 
   backButton.addEventListener("click", showMainView);
-  helpBackButton.addEventListener("click", showMainView);
 
   saveShortcutButton.addEventListener("click", () => {
     saveShortcut().catch((error) => {
@@ -502,6 +511,17 @@ function bindEvents() {
     if (!document.hidden) {
       focusSearchInput();
       scheduleFocusRetries();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.defaultPrevented) {
+      return;
+    }
+    const hasCtrl = event.ctrlKey && !event.metaKey;
+    if (hasCtrl && event.key.toLowerCase() === "h") {
+      event.preventDefault();
+      toggleHelpView();
     }
   });
 }
