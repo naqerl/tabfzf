@@ -10,7 +10,7 @@ Fallback: `https://youtu.be/-RNFQ8brvkU`
 
 ## Features
 
-1. [x] Trigger by configurable shortcut
+1. [x] Trigger by configurable shortcut (default: `Ctrl+Shift+F`)
 2. [x] Emacs-like binds
 3. [ ] Change themes (TODO)
 4. [ ] Change fuzzy algorithms (TODO)
