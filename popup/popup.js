@@ -10,6 +10,10 @@ const shortcutInput = document.getElementById("shortcutInput");
 const saveShortcutButton = document.getElementById("saveShortcutButton");
 const openFirefoxShortcutsButton = document.getElementById("openFirefoxShortcutsButton");
 const settingsStatusText = document.getElementById("settingsStatusText");
+const themeList = document.getElementById("themeList");
+const themeNameInput = document.getElementById("themeNameInput");
+const themeJsonInput = document.getElementById("themeJsonInput");
+const addThemeButton = document.getElementById("addThemeButton");
 
 const browserApi = globalThis.browser ?? globalThis.chrome;
 const COMMAND_NAME = "_execute_browser_action";
@@ -21,11 +25,355 @@ const hasPromiseCommandsGetAll = Boolean(globalThis.browser?.commands?.getAll);
 const hasPromiseCommandsUpdate = Boolean(globalThis.browser?.commands?.update);
 const hasPromiseTabsCreate = Boolean(globalThis.browser?.tabs?.create);
 
+const STORAGE_CUSTOM_THEMES = "tabfzf.customThemes.v1";
+const STORAGE_SELECTED_THEME = "tabfzf.selectedThemeId.v1";
+
+const DEFAULT_THEME_COLORS = {
+  bg: "#0a0f14",
+  panel: "#111921",
+  text: "#d7e3ee",
+  muted: "#8b9aaa",
+  border: "#283847",
+  focus: "#8eb7ff",
+  active: "#1d2a36",
+  rowBorder: "rgba(40, 56, 71, 0.65)",
+  title: "#aeb9c5",
+  fontBody: '"JetBrains Mono", "Fira Code", Menlo, Consolas, monospace',
+};
+
+const DEFAULT_THEMES = [
+  {
+    id: "midnight-fzf",
+    name: "Midnight FZF",
+    source: "default",
+    colors: { ...DEFAULT_THEME_COLORS },
+  },
+  {
+    id: "win98-foot-light",
+    name: "Windows 98 Foot Light",
+    source: "default",
+    colors: {
+      bg: "#f3f1ee",
+      panel: "#ffffff",
+      text: "#202124",
+      muted: "#6f6963",
+      border: "#8c867f",
+      focus: "#6e8eb3",
+      active: "#e2e6ed",
+      rowBorder: "#b3a56e",
+      title: "#3a3a3a",
+      fontBody: 'Tahoma, "MS Sans Serif", Arial, sans-serif',
+    },
+  },
+];
+
+let customThemes = [];
+let selectedThemeId = DEFAULT_THEMES[0].id;
+
 let allTabs = [];
 let filteredTabs = [];
 let selectedIndex = 0;
 let focusRetryTimer = null;
 let currentActiveTabId = null;
+
+function getStorageValue(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch (_error) {
+    return null;
+  }
+}
+
+function setStorageValue(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch (_error) {
+    // Ignore storage failures in restricted contexts.
+  }
+}
+
+function normalizeHexColor(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) {
+    return trimmed.toLowerCase();
+  }
+
+  if (/^[0-9a-fA-F]{6}$/.test(trimmed)) {
+    return `#${trimmed.toLowerCase()}`;
+  }
+
+  return null;
+}
+
+function normalizeThemeColors(rawColors, fallbackColors) {
+  const fallback = fallbackColors || DEFAULT_THEME_COLORS;
+  const next = { ...fallback };
+
+  const colorKeys = ["bg", "panel", "text", "muted", "border", "focus", "active", "title"];
+  for (const key of colorKeys) {
+    const normalized = normalizeHexColor(rawColors?.[key]);
+    if (normalized) {
+      next[key] = normalized;
+    }
+  }
+
+  const rowBorderCandidate = rawColors?.rowBorder;
+  if (typeof rowBorderCandidate === "string" && rowBorderCandidate.trim()) {
+    next.rowBorder = rowBorderCandidate.trim();
+  }
+
+  const fontBodyCandidate = rawColors?.fontBody;
+  if (typeof fontBodyCandidate === "string" && fontBodyCandidate.trim()) {
+    next.fontBody = fontBodyCandidate.trim();
+  }
+
+  return next;
+}
+
+function getAllThemes() {
+  return [...DEFAULT_THEMES, ...customThemes];
+}
+
+function findThemeById(themeId) {
+  return getAllThemes().find((theme) => theme.id === themeId) || null;
+}
+
+function isLightColor(hexColor) {
+  const normalized = normalizeHexColor(hexColor);
+  if (!normalized) {
+    return false;
+  }
+
+  const value = normalized.slice(1);
+  const r = Number.parseInt(value.slice(0, 2), 16);
+  const g = Number.parseInt(value.slice(2, 4), 16);
+  const b = Number.parseInt(value.slice(4, 6), 16);
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return luminance > 0.58;
+}
+
+function applyTheme(theme) {
+  const root = document.documentElement;
+  const colors = normalizeThemeColors(theme?.colors, DEFAULT_THEME_COLORS);
+
+  root.style.setProperty("--bg", colors.bg);
+  root.style.setProperty("--panel", colors.panel);
+  root.style.setProperty("--text", colors.text);
+  root.style.setProperty("--muted", colors.muted);
+  root.style.setProperty("--border", colors.border);
+  root.style.setProperty("--focus", colors.focus);
+  root.style.setProperty("--active", colors.active);
+  root.style.setProperty("--row-border", colors.rowBorder);
+  root.style.setProperty("--title", colors.title);
+  root.style.setProperty("--font-body", colors.fontBody);
+
+  const colorScheme = isLightColor(colors.bg) ? "light" : "dark";
+  root.style.setProperty("color-scheme", colorScheme);
+}
+
+function saveCustomThemes() {
+  setStorageValue(STORAGE_CUSTOM_THEMES, JSON.stringify(customThemes));
+}
+
+function loadCustomThemes() {
+  const raw = getStorageValue(STORAGE_CUSTOM_THEMES);
+  if (!raw) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    const loaded = [];
+    for (let i = 0; i < parsed.length; i += 1) {
+      const item = parsed[i];
+      if (!item || typeof item !== "object") {
+        continue;
+      }
+
+      const idValue = typeof item.id === "string" && item.id.trim() ? item.id.trim() : `custom-${Date.now()}-${i}`;
+      const nameValue = typeof item.name === "string" && item.name.trim() ? item.name.trim() : `Custom Theme ${i + 1}`;
+      const colors = normalizeThemeColors(item.colors, DEFAULT_THEME_COLORS);
+
+      loaded.push({
+        id: idValue,
+        name: nameValue,
+        source: "custom",
+        colors,
+      });
+    }
+
+    return loaded;
+  } catch (_error) {
+    return [];
+  }
+}
+
+function loadSelectedThemeId() {
+  const raw = getStorageValue(STORAGE_SELECTED_THEME);
+  if (!raw || typeof raw !== "string") {
+    return DEFAULT_THEMES[0].id;
+  }
+
+  const trimmed = raw.trim();
+  return trimmed || DEFAULT_THEMES[0].id;
+}
+
+function setActiveTheme(themeId, options = {}) {
+  const persist = options.persist !== false;
+  const theme = findThemeById(themeId) || DEFAULT_THEMES[0];
+  selectedThemeId = theme.id;
+  applyTheme(theme);
+
+  if (persist) {
+    setStorageValue(STORAGE_SELECTED_THEME, selectedThemeId);
+  }
+
+  renderThemeList();
+}
+
+function renderThemeList() {
+  if (!themeList) {
+    return;
+  }
+
+  const themes = getAllThemes();
+  themeList.innerHTML = "";
+
+  const fragment = document.createDocumentFragment();
+  for (let i = 0; i < themes.length; i += 1) {
+    const theme = themes[i];
+
+    const item = document.createElement("li");
+    item.className = `theme-item${theme.id === selectedThemeId ? " active" : ""}`;
+
+    const meta = document.createElement("div");
+    meta.className = "theme-meta";
+
+    const name = document.createElement("span");
+    name.className = "theme-name";
+    name.textContent = theme.name;
+
+    const type = document.createElement("span");
+    type.className = "theme-type";
+    type.textContent = theme.source;
+
+    meta.appendChild(name);
+    meta.appendChild(type);
+
+    const actions = document.createElement("div");
+    actions.className = "theme-actions";
+
+    const applyButton = document.createElement("button");
+    applyButton.type = "button";
+    applyButton.className = "small-button";
+    applyButton.textContent = theme.id === selectedThemeId ? "Active" : "Apply";
+    applyButton.dataset.action = "apply-theme";
+    applyButton.dataset.themeId = theme.id;
+
+    actions.appendChild(applyButton);
+
+    if (theme.source === "custom") {
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "small-button danger";
+      deleteButton.textContent = "Delete";
+      deleteButton.dataset.action = "delete-theme";
+      deleteButton.dataset.themeId = theme.id;
+      actions.appendChild(deleteButton);
+    }
+
+    item.appendChild(meta);
+    item.appendChild(actions);
+    fragment.appendChild(item);
+  }
+
+  themeList.appendChild(fragment);
+}
+
+function deleteCustomTheme(themeId) {
+  const target = customThemes.find((theme) => theme.id === themeId);
+  if (!target) {
+    settingsStatusText.textContent = "Custom theme not found.";
+    return;
+  }
+
+  customThemes = customThemes.filter((theme) => theme.id !== themeId);
+  saveCustomThemes();
+
+  if (selectedThemeId === themeId) {
+    setActiveTheme(DEFAULT_THEMES[0].id);
+  } else {
+    renderThemeList();
+  }
+
+  settingsStatusText.textContent = `Deleted theme: ${target.name}`;
+}
+
+function addCustomTheme() {
+  const name = (themeNameInput.value || "").trim() || `Custom Theme ${customThemes.length + 1}`;
+  const sourceText = (themeJsonInput.value || "").trim();
+
+  if (!sourceText) {
+    settingsStatusText.textContent = "Enter a JSON object with theme keys.";
+    return;
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(sourceText);
+  } catch (_error) {
+    settingsStatusText.textContent = "Theme JSON is invalid.";
+    return;
+  }
+
+  const rawColors = parsed && typeof parsed === "object" && parsed.colors && typeof parsed.colors === "object"
+    ? parsed.colors
+    : parsed;
+
+  if (!rawColors || typeof rawColors !== "object" || Array.isArray(rawColors)) {
+    settingsStatusText.textContent = "Theme JSON must be an object.";
+    return;
+  }
+
+  const keys = ["bg", "panel", "text", "muted", "border", "focus", "active", "rowBorder", "title", "fontBody"];
+  const hasSupportedKey = keys.some((key) => rawColors[key] !== undefined);
+  if (!hasSupportedKey) {
+    settingsStatusText.textContent = "No supported theme keys found in JSON.";
+    return;
+  }
+
+  const id = `custom-${Date.now()}`;
+  const colors = normalizeThemeColors(rawColors, DEFAULT_THEME_COLORS);
+
+  customThemes.push({
+    id,
+    name,
+    source: "custom",
+    colors,
+  });
+
+  saveCustomThemes();
+  themeNameInput.value = "";
+  themeJsonInput.value = "";
+  setActiveTheme(id);
+  settingsStatusText.textContent = `Added and applied theme: ${name}`;
+}
+
+function initializeThemes() {
+  customThemes = loadCustomThemes();
+  const loadedThemeId = loadSelectedThemeId();
+  const selectedTheme = findThemeById(loadedThemeId) || DEFAULT_THEMES[0];
+  selectedThemeId = selectedTheme.id;
+  applyTheme(selectedTheme);
+}
 
 function focusSearchInput() {
   if (!mainView || mainView.classList.contains("hidden")) {
@@ -102,6 +450,7 @@ async function showSettingsView() {
   helpView.classList.add("hidden");
   settingsView.classList.remove("hidden");
   settingsStatusText.textContent = "";
+  renderThemeList();
   await loadCurrentShortcut();
   shortcutInput.focus();
 }
@@ -528,6 +877,33 @@ function bindEvents() {
     }
   });
 
+  themeList.addEventListener("click", (event) => {
+    const node = event.target instanceof HTMLElement ? event.target : null;
+    if (!node) {
+      return;
+    }
+
+    const action = node.dataset.action;
+    const themeId = node.dataset.themeId;
+    if (!action || !themeId) {
+      return;
+    }
+
+    if (action === "apply-theme") {
+      setActiveTheme(themeId);
+      settingsStatusText.textContent = "Theme applied.";
+      return;
+    }
+
+    if (action === "delete-theme") {
+      deleteCustomTheme(themeId);
+    }
+  });
+
+  addThemeButton.addEventListener("click", () => {
+    addCustomTheme();
+  });
+
   openSettingsButton.addEventListener("click", () => {
     showSettingsView().catch((error) => {
       settingsStatusText.textContent = `Failed to open settings: ${error.message || String(error)}`;
@@ -574,6 +950,7 @@ function bindEvents() {
 
 async function init() {
   try {
+    initializeThemes();
     allTabs = await queryTabs();
     const activeTabs = await queryTabs({ active: true, currentWindow: true });
     currentActiveTabId = activeTabs[0]?.id ?? null;

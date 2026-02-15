@@ -5,6 +5,11 @@
   --text: #d7e3ee;
   --muted: #8b9aaa;
   --border: #283847;
+  --focus: #8eb7ff;
+  --active: #1d2a36;
+  --row-border: rgba(40, 56, 71, 0.65);
+  --title: #aeb9c5;
+  --font-body: "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
 }
 
 * {
@@ -23,7 +28,7 @@ body {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+  font-family: var(--font-body);
   font-size: 13px;
 }
 
@@ -44,7 +49,8 @@ body {
   display: none;
 }
 
-.query {
+.query,
+.theme-json-input {
   width: 100%;
   border: 1px solid var(--border);
   background: var(--panel);
@@ -52,10 +58,17 @@ body {
   padding: 8px 10px;
   border-radius: 4px;
   outline: none;
+  font: inherit;
 }
 
-.query:focus {
-  border-color: #8eb7ff;
+.theme-json-input {
+  resize: vertical;
+  min-height: 92px;
+}
+
+.query:focus,
+.theme-json-input:focus {
+  border-color: var(--focus);
 }
 
 .tabs {
@@ -74,7 +87,7 @@ body {
   align-items: center;
   gap: 8px;
   padding: 7px 10px;
-  border-bottom: 1px solid rgba(40, 56, 71, 0.65);
+  border-bottom: 1px solid var(--row-border);
 }
 
 .tab-item:last-child {
@@ -82,11 +95,11 @@ body {
 }
 
 .tab-item.active {
-  background: #1d2a36;
+  background: var(--active);
 }
 
 .tab-title {
-  color: #aeb9c5;
+  color: var(--title);
 }
 
 .tab-label {
@@ -160,6 +173,11 @@ body {
   font-size: 16px;
 }
 
+.section-title {
+  margin: 0;
+  font-size: 14px;
+}
+
 .back-button,
 .action-button {
   border: 1px solid var(--border);
@@ -185,6 +203,83 @@ body {
 .settings-actions {
   display: flex;
   gap: 8px;
+}
+
+.theme-settings {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.theme-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: auto;
+  max-height: 116px;
+  background: var(--panel);
+}
+
+.theme-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--row-border);
+}
+
+.theme-item:last-child {
+  border-bottom: none;
+}
+
+.theme-item.active {
+  background: var(--active);
+}
+
+.theme-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.theme-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theme-type {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.theme-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.small-button {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--text);
+  padding: 3px 6px;
+  cursor: pointer;
+}
+
+.small-button.danger {
+  color: #c96369;
 }
 
 .legend-list {

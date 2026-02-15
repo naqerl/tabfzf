@@ -43,6 +43,32 @@
           <button id="saveShortcutButton" class="action-button" type="button">Save Shortcut</button>
           <button id="openFirefoxShortcutsButton" class="action-button secondary" type="button">Open Firefox Shortcuts</button>
         </div>
+        <section class="theme-settings" aria-labelledby="themesTitle">
+          <h2 id="themesTitle" class="section-title">Themes</h2>
+          <ul id="themeList" class="theme-list" aria-label="Theme list"></ul>
+          <label class="field-label" for="themeNameInput">Custom Theme Name</label>
+          <input
+            id="themeNameInput"
+            class="query"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="My Theme"
+            aria-label="Custom theme name"
+          />
+          <label class="field-label" for="themeJsonInput">Custom Theme Colors (JSON)</label>
+          <textarea
+            id="themeJsonInput"
+            class="theme-json-input"
+            spellcheck="false"
+            rows="6"
+            aria-label="Custom theme colors JSON"
+            placeholder='{"bg":"#111111","panel":"#1e1e1e","text":"#f0f0f0","muted":"#999999","border":"#444444","focus":"#77aaff","active":"#2a2a2a","rowBorder":"#333333","title":"#cccccc","fontBody":"\"JetBrains Mono\", monospace"}'
+          ></textarea>
+          <div class="settings-actions">
+            <button id="addThemeButton" class="action-button" type="button">Add Custom Theme</button>
+          </div>
+        </section>
         <div class="bottom-bar">
           <p id="settingsStatusText" class="status" aria-live="polite"></p>
           <button id="backButton" class="back-button" type="button" aria-label="Back">Back</button>
