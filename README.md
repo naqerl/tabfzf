@@ -24,7 +24,7 @@ Fallback: [https://youtu.be/-RNFQ8brvkU](https://youtu.be/-RNFQ8brvkU)
 
 Download:
 ```bash
-curl -L -o tabfzf.xpi https://github.com/naqerl/tabfzf/releases/download/latest/tabfzf.xpi
+curl -L -o tabfzf.xpi https://github.com/naqerl/tabfzf/releases/latest/download/tabfzf.xpi
 ```
 1. Open `about:addons` in Firefox.
 1. Click the gear icon, then **Install Add-on From File...**
