@@ -30,8 +30,14 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: tabfzf-xpi
-          path: dist/tabfzf.xpi
+          name: tabfzf-firefox-xpi
+          path: dist/firefox/tabfzf-firefox.xpi
+
+      - name: Upload chromium build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tabfzf-chromium-zip
+          path: dist/chromium/tabfzf-chromium.zip
 
       - name: Publish GitHub release
         if: startsWith(github.ref, 'refs/tags/')
@@ -39,5 +45,7 @@ jobs:
         with:
           name: TabFZF ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
-          files: dist/tabfzf.xpi
+          files: |
+            dist/firefox/tabfzf-firefox.xpi
+            dist/chromium/tabfzf-chromium.zip
           generate_release_notes: true

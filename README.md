@@ -18,14 +18,28 @@ Fallback: [https://youtu.be/-RNFQ8brvkU](https://youtu.be/-RNFQ8brvkU)
 ## Supported Browsers
 
 - [x] Firefox
-- [ ] Chromium (planned)
+- [x] Chromium-based browsers (Chrome, Edge, Brave)
 
 ## Installation Guide
 
-Download:
+Download Firefox package:
 ```bash
-curl -L -o tabfzf.xpi https://github.com/naqerl/tabfzf/releases/latest/download/tabfzf.xpi
+curl -L -o tabfzf-firefox.xpi https://github.com/naqerl/tabfzf/releases/latest/download/tabfzf-firefox.xpi
 ```
 1. Open `about:addons` in Firefox.
 1. Click the gear icon, then **Install Add-on From File...**
-1. Select the downloaded `tabfzf.xpi`.
+1. Select the downloaded `tabfzf-firefox.xpi`.
+
+Download Chromium package:
+```bash
+curl -L -o tabfzf-chromium.zip https://github.com/naqerl/tabfzf/releases/latest/download/tabfzf-chromium.zip
+```
+1. Unzip `tabfzf-chromium.zip`.
+1. Open `chrome://extensions` (or `edge://extensions`).
+1. Enable **Developer mode**.
+1. Click **Load unpacked** and select the unzipped folder.
+
+## Shortcuts Notes
+
+- Firefox: Use `about:addons` to manage extension shortcuts.
+- Chromium browsers: Use `chrome://extensions/shortcuts` (or `edge://extensions/shortcuts`).

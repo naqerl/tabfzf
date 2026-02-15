@@ -8,7 +8,7 @@ const openSettingsButton = document.getElementById("openSettingsButton");
 const backButton = document.getElementById("backButton");
 const shortcutInput = document.getElementById("shortcutInput");
 const saveShortcutButton = document.getElementById("saveShortcutButton");
-const openFirefoxShortcutsButton = document.getElementById("openFirefoxShortcutsButton");
+const openShortcutsButton = document.getElementById("openShortcutsButton");
 const settingsStatusText = document.getElementById("settingsStatusText");
 const themeList = document.getElementById("themeList");
 const themeNameInput = document.getElementById("themeNameInput");
@@ -16,7 +16,8 @@ const themeJsonInput = document.getElementById("themeJsonInput");
 const addThemeButton = document.getElementById("addThemeButton");
 
 const browserApi = globalThis.browser ?? globalThis.chrome;
-const COMMAND_NAME = "_execute_browser_action";
+const COMMAND_NAME_CANDIDATES = ["_execute_action", "_execute_browser_action"];
+let resolvedCommandName = null;
 
 const hasPromiseTabsQuery = Boolean(globalThis.browser?.tabs?.query);
 const hasPromiseTabsUpdate = Boolean(globalThis.browser?.tabs?.update);
@@ -75,6 +76,42 @@ let filteredTabs = [];
 let selectedIndex = 0;
 let focusRetryTimer = null;
 let currentActiveTabId = null;
+
+function getBrowserFamily() {
+  const userAgent = globalThis.navigator?.userAgent || "";
+  if (userAgent.includes("Firefox/")) {
+    return "firefox";
+  }
+  if (userAgent.includes("Edg/")) {
+    return "edge";
+  }
+  return "chromium";
+}
+
+function getShortcutsPageCandidates() {
+  const browserFamily = getBrowserFamily();
+  if (browserFamily === "firefox") {
+    return ["about:addons"];
+  }
+  if (browserFamily === "edge") {
+    return ["edge://extensions/shortcuts", "chrome://extensions/shortcuts"];
+  }
+  return ["chrome://extensions/shortcuts", "brave://extensions/shortcuts"];
+}
+
+function getOpenShortcutsButtonLabel() {
+  if (getBrowserFamily() === "firefox") {
+    return "Open Firefox Shortcuts";
+  }
+  return "Open Extension Shortcuts";
+}
+
+function getFallbackCommandName() {
+  if (getBrowserFamily() === "firefox") {
+    return "_execute_browser_action";
+  }
+  return "_execute_action";
+}
 
 function getStorageValue(key) {
   try {
@@ -651,12 +688,14 @@ async function updateCommandShortcut(shortcut) {
     throw new Error("Direct shortcut updates are not supported in this browser.");
   }
 
+  const commandName = await resolveCommandName();
+
   if (hasPromiseCommandsUpdate) {
-    return browserApi.commands.update({ name: COMMAND_NAME, shortcut });
+    return browserApi.commands.update({ name: commandName, shortcut });
   }
 
   return new Promise((resolve, reject) => {
-    browserApi.commands.update({ name: COMMAND_NAME, shortcut }, () => {
+    browserApi.commands.update({ name: commandName, shortcut }, () => {
       const runtimeError = browserApi.runtime?.lastError;
       if (runtimeError) {
         reject(new Error(runtimeError.message));
@@ -683,14 +722,52 @@ async function createTab(url) {
   });
 }
 
+async function resolveCommandName(commands) {
+  if (resolvedCommandName) {
+    return resolvedCommandName;
+  }
+
+  let availableCommands = commands;
+  if (!availableCommands) {
+    try {
+      availableCommands = await getAllCommands();
+    } catch (_error) {
+      availableCommands = [];
+    }
+  }
+
+  const matchingCommand = availableCommands.find((cmd) => COMMAND_NAME_CANDIDATES.includes(cmd.name));
+  resolvedCommandName = matchingCommand?.name || getFallbackCommandName();
+  return resolvedCommandName;
+}
+
+async function openShortcutsPage() {
+  const candidates = getShortcutsPageCandidates();
+  let lastError = null;
+
+  for (const url of candidates) {
+    try {
+      await createTab(url);
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  if (lastError) {
+    throw lastError;
+  }
+}
+
 async function loadCurrentShortcut() {
   try {
     const commands = await getAllCommands();
-    const openCommand = commands.find((cmd) => cmd.name === COMMAND_NAME);
+    const commandName = await resolveCommandName(commands);
+    const openCommand = commands.find((cmd) => cmd.name === commandName);
     shortcutInput.value = openCommand?.shortcut || "";
     settingsStatusText.textContent = openCommand?.shortcut
       ? "Current shortcut loaded."
-      : "No shortcut set. Save one or open Firefox shortcuts.";
+      : "No shortcut set. Save one or open browser shortcuts.";
   } catch (error) {
     settingsStatusText.textContent = `Failed to load shortcut: ${error.message || String(error)}`;
   }
@@ -707,7 +784,7 @@ async function saveShortcut() {
     await updateCommandShortcut(shortcut);
     settingsStatusText.textContent = "Shortcut saved.";
   } catch (error) {
-    settingsStatusText.textContent = `Cannot set shortcut here: ${error.message || String(error)}. Use Firefox shortcuts.`;
+    settingsStatusText.textContent = `Cannot set shortcut here: ${error.message || String(error)}. Use browser shortcuts.`;
   }
 }
 
@@ -919,9 +996,11 @@ function bindEvents() {
     });
   });
 
-  openFirefoxShortcutsButton.addEventListener("click", () => {
-    createTab("about:addons").catch((error) => {
-      settingsStatusText.textContent = `Failed to open Firefox shortcuts: ${error.message || String(error)}`;
+  openShortcutsButton.textContent = getOpenShortcutsButtonLabel();
+
+  openShortcutsButton.addEventListener("click", () => {
+    openShortcutsPage().catch((error) => {
+      settingsStatusText.textContent = `Failed to open shortcuts page: ${error.message || String(error)}`;
     });
   });
 
