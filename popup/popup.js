@@ -159,6 +159,7 @@ function isLightColor(hexColor) {
 function applyTheme(theme) {
   const root = document.documentElement;
   const colors = normalizeThemeColors(theme?.colors, DEFAULT_THEME_COLORS);
+  root.dataset.themeId = theme?.id || "";
 
   root.style.setProperty("--bg", colors.bg);
   root.style.setProperty("--panel", colors.panel);
