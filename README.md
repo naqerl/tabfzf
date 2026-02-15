@@ -12,7 +12,7 @@ Fallback: [https://youtu.be/-RNFQ8brvkU](https://youtu.be/-RNFQ8brvkU)
 
 1. [x] Trigger by configurable shortcut (default: `Ctrl+Shift+F`)
 2. [x] Emacs-like binds
-3. [ ] Change themes (TODO)
+3. [x] Change themes
 4. [ ] Change fuzzy algorithms (TODO)
 
 ## Supported Browsers
